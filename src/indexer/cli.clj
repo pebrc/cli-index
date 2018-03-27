@@ -2,6 +2,7 @@
   (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as string]
             [clojure.tools.logging :as log]
+            [clojure.core.async :as async :refer [go <!! chan]]
             [indexer.watcher :as watcher]
             [indexer.indexer :as indexer]
             [indexer.log :as logger])
@@ -42,7 +43,7 @@
       (logger/init)
       (log/debug options)
       (log/debug arguments)
-      (watcher/start! (assoc options :indexer indexer/handler))
-      (while true
-        (Thread/sleep 1000))
+      (let [done (chan)]
+        (go  (watcher/start! (assoc options :indexer indexer/handler)))
+        (<!! done))
       (catch Exception e (log/error e)))))

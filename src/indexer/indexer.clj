@@ -8,7 +8,7 @@
 
 (defn target-path [t f]
   (let [d (parse-date f)]
-    (str t "/" (year d) "/" (month d) "/" (.getName f))))
+    (str t "/" (year d) "/" (.getValue (month d)) "/" (.getName f))))
 
 (defn link [src target]
   (io/make-parents target)
