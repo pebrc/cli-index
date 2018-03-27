@@ -1,10 +1,10 @@
-(ns cli
+(ns indexer.cli
   (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as string]
             [clojure.tools.logging :as log]
-            [watcher :as watcher]
-            [indexer :as indexer]
-            [log :as logger])
+            [indexer.watcher :as watcher]
+            [indexer.indexer :as indexer]
+            [indexer.log :as logger])
   (:gen-class))
 
 (def cli-options
@@ -43,5 +43,6 @@
       (log/debug options)
       (log/debug arguments)
       (watcher/start! (assoc options :indexer indexer/handler))
-      (while true)
+      (while true
+        (Thread/sleep 1000))
       (catch Exception e (log/error e)))))

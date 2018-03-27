@@ -1,4 +1,4 @@
-(ns log
+(ns indexer.log
   (:import org.slf4j.bridge.SLF4JBridgeHandler))
 
 (defn init []

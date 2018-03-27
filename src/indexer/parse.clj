@@ -1,4 +1,4 @@
-(ns parse
+(ns indexer.parse
   (:require [java-time :as t]
             [me.raynes.fs :as fs])
   (:import [java.util Date]

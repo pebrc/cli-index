@@ -1,7 +1,7 @@
 (ns parse-test
   (:require [clojure.test :refer :all]
             [me.raynes.fs :as fs]
-            [parse :refer :all]
+            [indexer.parse :refer :all]
             [java-time :as t]))
 
 

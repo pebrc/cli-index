@@ -1,4 +1,4 @@
-(ns watcher
+(ns indexer.watcher
   (:require [hawk.core :as h]
             [clojure.tools.logging :as log]))
 

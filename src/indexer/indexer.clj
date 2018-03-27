@@ -1,5 +1,5 @@
-(ns indexer
-  (:require [parse :refer :all]
+(ns indexer.indexer
+  (:require [indexer.parse :refer :all]
             [java-time :refer [year month]]
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
