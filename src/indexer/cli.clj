@@ -45,10 +45,11 @@
       (log/debug options)
       (log/debug arguments)
       (let [done (chan)
-            in (chan 100)]
+            in (chan 100)
+            ctx (assoc options :indexer indexer/handler :in in)]
         (go
           (indexer/index in)
-          (watcher/start! (assoc options :indexer indexer/handler :in in))
-          (reconciler/reconcile (:target options) in))
+          (watcher/start! ctx)
+          (reconciler/reconcile ctx))
         (<!! done))
       (catch Exception e (log/error e)))))

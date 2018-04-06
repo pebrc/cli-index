@@ -1,5 +1,6 @@
 (ns indexer.reconciler
-  (:require 
+  (:require
+   [indexer.indexer :as indexer]
    [me.raynes.fs :as fs]
    [clojure.tools.logging :as log]
    [clojure.core.async :refer [chan go-loop timeout <! >!!]]))
@@ -9,6 +10,7 @@
 (def max-interval (* 60 1000))
 
 (defn pick [path]
+  (log/trace "pick path " path)
   (if (and path (fs/directory? path))
     (recur (rand-nth (fs/list-dir path)))
     path))
@@ -20,7 +22,7 @@
 
 
 (defn re-index [in idx-root src]
-  (log/info "reindexing " (fs/list-dir src))
+  (log/debug "reindexing " src)
   (doall
    (->> (fs/list-dir src)
         (map #(>!! in (assoc {} :target idx-root :file %))))))
@@ -30,13 +32,30 @@
     (fs/delete entry)
     (re-index in idx-root invalid-src-dir)))
 
-(defn reconcile [idx in]
+(defn reconcile-index [idx in]
+  (let [e (pick idx)
+        v (valid-entry? e)]
+    (when-not v
+      (fix in idx  e))
+    v))
+
+(defn reconcile-src [in target src]
+  (if-let [s (pick src)]
+    (let [t (indexer/target-path target s)
+          v (and t (indexer/indexable? s) (fs/exists? t))
+          _ (log/debug "random sample. src " s " target " t  " indexed " v )]
+      (when-not v
+        (re-index in target (fs/parent s)))
+      v)))
+
+
+(defn reconcile [{:keys [target source in]}]
   (go-loop [millis interval]
     (<! (timeout millis))
-    (log/info "reconciling " idx " after " (float (/ millis 1000)) " secs")
-    (let [e (pick idx)
-          v (valid-entry? e)
-          delay (if v 1000 -1000)]
-      (when-not v
-        (fix in idx  e))
+    (log/info  "reconciling  after " (float (/ millis 1000)) " secs")
+    (let [v1 (->> source
+                  (map #(reconcile-src in target %))
+                  (some true?))
+          v2 (reconcile-index target in)
+          delay (if (and v1 v2) 1000 -1000)]
       (recur (max interval (min max-interval (+ delay  millis)))))))

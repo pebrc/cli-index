@@ -24,8 +24,9 @@
   (go-loop []
     (let [{:keys [file target]} (<! evts)]
       (when (indexable? file)
-        (log/debug "linking " file " to " target)
-        (link file (target-path target file)))
+        (let [t (target-path target file)]
+          (log/trace "linking " file " to " t)
+          (link file t)))
       (recur))))
 
 (defn handler [ctx e]
