@@ -4,8 +4,10 @@
 
 (def state (atom nil))
 
-(def file-filter (fn [_ {:keys [file]}]
-                   (re-matches #"\p{Alnum}+.*\.\p{Alnum}+" (.getName file))))
+(defn indexable? [file]
+  (re-matches #"\p{Alnum}+.*\.\p{Alnum}+" (.getName file)))
+
+(def file-filter (fn [_ {:keys [file]}] (indexable? file)))
 
 (defn start! [cfg]
   (reset! state

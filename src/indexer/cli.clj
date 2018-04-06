@@ -5,6 +5,7 @@
             [clojure.core.async :as async :refer [go <!! chan]]
             [indexer.watcher :as watcher]
             [indexer.indexer :as indexer]
+            [indexer.reconciler :as reconciler]
             [indexer.log :as logger])
   (:gen-class))
 
@@ -44,6 +45,7 @@
       (log/debug options)
       (log/debug arguments)
       (let [done (chan)]
-        (go  (watcher/start! (assoc options :indexer indexer/handler)))
+        (go  (watcher/start! (assoc options :indexer indexer/handler))
+             (reconciler/reconcile (:target options)))
         (<!! done))
       (catch Exception e (log/error e)))))
