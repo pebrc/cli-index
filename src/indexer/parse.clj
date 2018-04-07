@@ -35,7 +35,7 @@
            (.creationTime)
            (.toInstant))
        (catch Exception e
-         (log/warn "Could not parse date." e)
+         (log/warn "Could not parse date:" (:type e) (:message e))
          nil)))
 
 

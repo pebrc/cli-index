@@ -13,10 +13,16 @@
   (if-let [d (parse-date f)]
     (str t "/" (year d) "/" (.getValue (month d)) "/" (.getName f))))
 
+
+(defn linked? [src lnk]
+  (when (fs/link? lnk)
+    (let [target (fs/read-sym-link lnk)]
+      (= src target))))
+
 (defn link [src target]
-  (when target
+  (when (and  target (not (linked? src target)))
     (io/make-parents target)
-    (when (fs/exists? target)
+    (when (fs/link? target)
       (fs/delete target))
     (fs/sym-link target src)))
 

@@ -42,20 +42,23 @@
 (defn reconcile-src [in target src]
   (if-let [s (pick src)]
     (let [t (indexer/target-path target s)
-          v (and t (indexer/indexable? s) (fs/exists? t))
-          _ (log/debug "random sample. src " s " target " t  " indexed " v )]
-      (when-not v
+          idx (indexer/indexable? s)
+          v (and t (fs/exists? t))
+          _ (log/debug "random sample. src " s " target " t  " relevant " idx  " indexed " v )]
+      (when (and idx (not v)) 
         (re-index in target (fs/parent s)))
       v)))
 
 
 (defn reconcile [{:keys [target source in]}]
   (go-loop [millis interval]
-    (<! (timeout millis))
-    (log/info  "reconciling  after " (float (/ millis 1000)) " secs")
-    (let [v1 (->> source
+    (<! (timeout millis))    
+    (let [src-valid (->> source
                   (map #(reconcile-src in target %))
-                  (some true?))
-          v2 (reconcile-index target in)
-          delay (if (and v1 v2) 1000 -1000)]
-      (recur (max interval (min max-interval (+ delay  millis)))))))
+                  (some false?))
+          idx-valid (reconcile-index target in)
+          factor (if (and src-valid idx-valid) 2 0)
+          next-run (max interval (min max-interval (* factor  millis)))]
+      (log/debug "index sample valid:" idx-valid "-- source sample valid: " src-valid)
+      (log/info  "reconciling in " (float (/ next-run 1000)) " secs")
+      (recur next-run))))
