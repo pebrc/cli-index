@@ -47,7 +47,7 @@
           _ (log/debug "random sample. src " s " target " t  " relevant " idx  " indexed " v )]
       (when (and idx (not v)) 
         (re-index in target (fs/parent s)))
-      v)))
+      (or (not idx) v))))
 
 
 (defn reconcile [{:keys [target source in]}]
@@ -55,7 +55,7 @@
     (<! (timeout millis))    
     (let [src-valid (->> source
                   (map #(reconcile-src in target %))
-                  (some false?))
+                  (every? true?))
           idx-valid (reconcile-index target in)
           factor (if (and src-valid idx-valid) 2 0)
           next-run (max interval (min max-interval (* factor  millis)))]
